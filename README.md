@@ -1,5 +1,5 @@
 # Hyperlisp
-Hyperlisp is an alternative web scripting language alternative to JavaScript. It is inspired by Dylan Beattie's [The Web That Never Was](https://www.youtube.com/watch?v=9CSjlZeqKOc). 
+Hyperlisp is an web scripting language alternative to JavaScript. It is inspired by Dylan Beattie's [The Web That Never Was](https://www.youtube.com/watch?v=9CSjlZeqKOc).
 
 
 ## Repl

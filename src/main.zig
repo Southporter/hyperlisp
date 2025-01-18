@@ -9,19 +9,18 @@ const readline = @cImport({
 
 const prompt: [:0]const u8 = "λ> ";
 
-fn toSlice(ptr: [*c]u8) []u8 {
+fn toSlice(ptr: [*c]u8) [:0]u8 {
     var len: usize = 0;
     while (ptr[len] != 0) {
         len += 1;
     }
-    const new_ptr = @as([*]u8, ptr);
-    return new_ptr[0..len];
+    const new_ptr = @as([*:0]u8, ptr);
+    return new_ptr[0..len :0];
 }
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
-    _ = allocator;
 
     const stdout = std.io.getStdOut().writer();
 
@@ -31,9 +30,9 @@ pub fn main() !void {
         readline.add_history(input);
         defer std.c.free(input);
         const slice = toSlice(input);
-        const val = try lib.eval(slice);
-        const output = lib.print(val);
-        try stdout.writeAll(output);
+        var val = try lib.eval(allocator, slice);
+        defer val.deinit(allocator);
+        try lib.print(stdout, val);
         try stdout.writeByte('\n');
 
         input = readline.readline(prompt.ptr);

@@ -57,6 +57,24 @@ pub fn build(b: *std.Build) void {
     const check_step = b.step("check", "Check for build errors");
     check_step.dependOn(&check_cmd.step);
 
+    const wasm_mod = b.createModule(.{
+        .root_source_file = b.path("src/wasm.zig"),
+        .target = b.resolveTargetQuery(.{
+            .cpu_arch = .wasm32,
+            .os_tag = .freestanding,
+        }),
+        .optimize = .Debug,
+    });
+    wasm_mod.addImport("hyperlisp", lib_mod);
+    const wasm_exe = b.addExecutable(.{
+        .name = "hyperlisp",
+        .root_module = wasm_mod,
+    });
+    wasm_exe.export_memory = true;
+    wasm_exe.rdynamic = true;
+
+    b.installArtifact(wasm_exe);
+
     const lib_unit_tests = b.addTest(.{
         .root_module = lib_mod,
     });

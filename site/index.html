@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Basic HTML Page</title>
+        <script src="js/grid-script.js"></script>
+    </head>
+    <body>
+        <h1>Welcome to My Basic HTML Page</h1>
+        <p>This is a simple HTML page created as an example.</p>
+
+        <script is="grid-script" type="text/hyperlisp">
+            (print '(\a \b \c))
+        </script>
+
+        <script>
+            customElements.define("grid-script", GridScript, {
+                extends: "script",
+            });
+        </script>
+        <grid-script></grid-script>
+    </body>
+</html>
