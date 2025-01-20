@@ -52,10 +52,8 @@ pub fn build(b: *std.Build) void {
     check_exe.linkLibC();
     check_exe.linkSystemLibrary("readline");
 
-    const check_cmd = b.addRunArtifact(check_exe);
-
     const check_step = b.step("check", "Check for build errors");
-    check_step.dependOn(&check_cmd.step);
+    check_step.dependOn(&check_exe.step);
 
     const wasm_mod = b.createModule(.{
         .root_source_file = b.path("src/wasm.zig"),
