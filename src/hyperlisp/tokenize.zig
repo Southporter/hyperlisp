@@ -224,11 +224,11 @@ pub const Tokenizer = struct {
                 }
             },
             .int_period => {
-                std.debug.print("In int_period: {c} -> {c}\n", .{ self.buffer[self.index], self.buffer[self.index + 1] });
+                // std.debug.print("In int_period: {c} -> {c}\n", .{ self.buffer[self.index], self.buffer[self.index + 1] });
                 self.index += 1;
                 switch (self.buffer[self.index]) {
                     '_', 'a'...'d', 'f'...'o', 'q'...'z', 'A'...'D', 'F'...'O', 'Q'...'Z', '0'...'9' => {
-                        std.debug.print("Going to float\n", .{});
+                        // std.debug.print("Going to float\n", .{});
                         self.index += 1;
                         result.tag = .float;
                         continue :state .float;
@@ -362,7 +362,8 @@ fn testTokenize(input: [:0]const u8, expected: []const Token.Tag) !void {
 
     for (expected, 0..) |tag, i| {
         const next = tokenizer.next();
-        std.debug.print("tag: {d} - {any}\n", .{ i, next.tag });
+        _ = i;
+        // std.debug.print("tag: {d} - {any}\n", .{ i, next.tag });
         try expectEqual(tag, next.tag);
     }
     try expectEqual(.eof, tokenizer.next().tag);

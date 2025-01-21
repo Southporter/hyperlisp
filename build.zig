@@ -71,6 +71,8 @@ pub fn build(b: *std.Build) void {
     wasm_exe.export_memory = true;
     wasm_exe.rdynamic = true;
 
+    check_step.dependOn(&wasm_exe.step);
+
     b.installArtifact(wasm_exe);
 
     const lib_unit_tests = b.addTest(.{

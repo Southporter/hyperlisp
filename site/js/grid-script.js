@@ -74,6 +74,7 @@ class Hyperlisp {
     if (!this.vm) {
       await this.load();
     }
+    // str = str + "\0";
     let encoder = new TextEncoder();
     let bytes = encoder.encode(str);
     let addr = this.vm.instance.exports.alloc(bytes.byteLength);
@@ -84,7 +85,7 @@ class Hyperlisp {
     );
     new TextEncoder().encodeInto(str, dest);
     const res = this.vm.instance.exports.eval(addr, bytes.byteLength);
-    console.log("Result from run", res, ret);
+    console.log("Result from run", res);
     this.vm.instance.exports.free(addr, str.byteLength);
   }
 }

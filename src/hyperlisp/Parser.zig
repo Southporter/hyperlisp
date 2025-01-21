@@ -196,7 +196,7 @@ pub fn parse(self: *Parser) !Ast {
                 };
                 const last = self.unclosed.popOrNull();
                 if (last) |opened| {
-                    std.debug.print("Closing {s} at {d}\n", .{ @tagName(opened.tag), opened.node });
+                    log.debug("closing {s} at {d}", .{ @tagName(opened.tag), opened.node });
                     if (opened.tag != opening_tag) return error.Unclosed;
                     const data = self.ast.tree.items(.data);
                     data[opened.node].list.next = data.len;
