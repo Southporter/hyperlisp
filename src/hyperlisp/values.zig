@@ -2,6 +2,15 @@ pub const Value = struct {
     tag: Tag,
     data: Data,
 
+    pub const Nil = Value{
+        .tag = .nil,
+        .data = .{ .nil = {} },
+    };
+    pub const True = Value{
+        .tag = .true,
+        .data = .{ .true = {} },
+    };
+
     pub const Tag = enum {
         nil,
         true,
@@ -13,9 +22,10 @@ pub const Value = struct {
         symbol,
     };
 
-    const SymbolData = struct {
+    pub const SymbolData = struct {
         offset: usize,
         len: usize,
+        id: u64,
     };
     const ListData = struct {
         len: usize = 0,

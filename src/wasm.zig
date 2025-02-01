@@ -52,7 +52,7 @@ export fn eval(ptr: [*:0]u8, len: usize) u32 {
     const input: [:0]const u8 = ptr[0..len :0];
     std.debug.assert(input[len] == 0);
 
-    const res = lib.eval(allocator, input) catch |err| {
+    const res = lib.eval(env, allocator, input) catch |err| {
         const msg = std.fmt.allocPrint(allocator, "Error: Unable to eval - {any}", .{err}) catch
         // return .{ .ptr = @ptrFromInt(1), .len = 0 };
             return 254;
@@ -82,5 +82,9 @@ export fn eval(ptr: [*:0]u8, len: usize) u32 {
     // return .{ .ptr = output.ptr, .len = output.len };
     return 0;
 }
+var env: lib.Env = undefined;
 
-pub fn main() void {}
+pub fn main() void {
+    env = lib.Env.init(allocator);
+    env.addBuiltins() catch unreachable;
+}

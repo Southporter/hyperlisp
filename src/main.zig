@@ -25,18 +25,36 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     var input = readline.readline(prompt.ptr);
+    var env = lib.Env.init(allocator);
+    defer env.deinit();
+    env.addBuiltins() catch unreachable;
+    env.addLambda(lib.hash("print"), &print) catch unreachable;
 
-    while (input != null) {
-        readline.add_history(input);
+    while (input != null) : (input = readline.readline(prompt.ptr)) {
         defer std.c.free(input);
+        defer input = null;
+
         const slice = toSlice(input);
-        var val = try lib.eval(allocator, slice);
+        if (slice.len == 0) {
+            continue;
+        }
+        readline.add_history(input);
+        var val = lib.eval(env, allocator, slice) catch |err| {
+            _ = try stdout.write("Error: Unable to eval - ");
+            try stdout.print("{any}\n", .{err});
+            continue;
+        };
         defer val.deinit(allocator);
         try lib.print(stdout, val);
         try stdout.writeByte('\n');
-
-        input = readline.readline(prompt.ptr);
     }
+}
+
+fn print(allocator: std.mem.Allocator, ast: lib.Parser.Ast) lib.NativeFnError!lib.Value {
+    _ = allocator;
+    const stdout = std.io.getStdOut().writer();
+    lib.print(stdout, ast) catch return lib.NativeFnError.Unknown;
+    return lib.Value.Nil;
 }
 
 test "simple test" {

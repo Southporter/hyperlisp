@@ -2,6 +2,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 const StringIndexAdapter = std.hash_map.StringIndexAdapter;
 const StringIndexContext = std.hash_map.StringIndexContext;
+const hasher = std.hash.Fnv1a_64;
 
 const log = std.log.scoped(.parser);
 
@@ -26,7 +27,7 @@ const OpenCollection = struct {
 };
 
 pub const Ast = struct {
-    tree: std.MultiArrayList(Value),
+    tree: std.MultiArrayList(Value) = .empty,
     symbol_pool: std.HashMapUnmanaged(u32, void, StringIndexContext, std.hash_map.default_max_load_percentage) = .empty,
     string_bytes: std.ArrayListUnmanaged(u8) = .empty,
 
@@ -40,6 +41,11 @@ pub const Ast = struct {
         ast.tree.deinit(allocator);
         ast.symbol_pool.deinit(allocator);
         ast.string_bytes.deinit(allocator);
+    }
+
+    pub fn symbolName(ast: Ast, sym: Value.SymbolData) []const u8 {
+        const data = ast.string_bytes.items;
+        return data[sym.offset .. sym.offset + sym.len];
     }
 };
 
@@ -104,6 +110,7 @@ pub fn parse(self: *Parser) !Ast {
                         .symbol = .{
                             .offset = name_index,
                             .len = name.len,
+                            .id = hasher.hash(name),
                         },
                     },
                 });
@@ -212,6 +219,12 @@ pub fn parse(self: *Parser) !Ast {
         }
     }
 
+    if (self.unclosed.items.len > 0) {
+        self.ast.tree.clearAndFree(self.allocator);
+
+        return error.Unclosed;
+    }
+
     return self.ast;
 }
 
@@ -242,7 +255,7 @@ test "simple list" {
     try std.testing.expectEqualSlices(Value.Tag, &.{ .list, .symbol, .int, .int }, ast.tree.items(.tag));
     try std.testing.expectEqualSlices(Value.Data, &.{
         .{ .list = .{ .len = 3, .next = 4 } },
-        .{ .symbol = .{ .len = 1, .offset = 0 } },
+        .{ .symbol = .{ .len = 1, .offset = 0, .id = hasher.hash("+") } },
         .{ .int = 1 },
         .{ .int = 2 },
     }, ast.tree.items(.data));
@@ -272,4 +285,12 @@ test "nested lists" {
 
     const most_inner_list = data[6];
     try std.testing.expectEqual(Value.Data{ .list = .{ .len = 3, .next = data.len - 2 } }, most_inner_list);
+}
+
+test "open lists" {
+    const input: [:0]const u8 = "(+ 1 4 ";
+    const allocator = std.testing.allocator;
+    var parser = Parser.init(allocator, input);
+
+    try std.testing.expectError(error.Unclosed, parser.parse());
 }
